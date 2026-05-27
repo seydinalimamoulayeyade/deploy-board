@@ -1,0 +1,57 @@
+services:
+
+  mongo:
+    image: mongo:7.0
+    container_name: deploy-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: deploy-board
+    ports:
+      - "27018:27017"      # Port 27018 pour éviter conflit avec Incident Tracker
+    volumes:
+      - deploy-mongo-data:/data/db
+    networks:
+      - deploy-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/deploy-board --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: deploy-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5001                                          # Port 5001 pour éviter conflit
+      MONGODB_URI: mongodb://mongo:27017/deploy-board
+      JENKINS_URL: http://host.docker.internal:8080      # Jenkins sur la machine hôte
+      JENKINS_USER: ${JENKINS_USER}
+      JENKINS_TOKEN: ${JENKINS_TOKEN}
+    ports:
+      - "5001:5001"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - deploy-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"             # Linux compatibility
+    healthcheck:
+      test: wget -qO- http://localhost:5001/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  deploy-mongo-data:
+    driver: local
+
+networks:
+  deploy-network:
+    driver: bridge

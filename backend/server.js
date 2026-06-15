@@ -1,14 +1,15 @@
 require('dotenv').config();
-const app       = require('./app');
-const mongoose  = require('mongoose');
+const app = require('./app');
+const { initializeDatabase } = require('./config/mongodb');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 const start = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB connected');
+    // Initialize MongoDB with retry logic
+    await initializeDatabase();
 
+    // Start Express server
     app.listen(PORT, () => {
       console.log(`🚀 Deploy Board running on port ${PORT} [${process.env.NODE_ENV}]`);
     });

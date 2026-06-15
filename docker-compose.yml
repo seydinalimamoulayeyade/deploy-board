@@ -32,6 +32,10 @@ services:
       JENKINS_URL: http://host.docker.internal:8080      # Jenkins sur la machine hôte
       JENKINS_USER: ${JENKINS_USER}
       JENKINS_TOKEN: ${JENKINS_TOKEN}
+      SONARQUBE_URL: ${SONARQUBE_URL:-http://host.docker.internal:9000}
+      SONARQUBE_TOKEN: ${SONARQUBE_TOKEN}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:5001}
     ports:
       - "5001:5001"
     depends_on:

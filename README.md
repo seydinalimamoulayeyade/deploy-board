@@ -1,160 +1,67 @@
 # Deploy Board — Tableau de bord CI/CD
 
-Deploy Board est un tableau de bord centralisé de déploiement continu qui intègre l'état des pipelines Jenkins, les builds Docker, les métriques de qualité SonarQube et l'historique des déploiements. Il offre une visibilité en temps réel sur les workflows d'intégration et de déploiement continus.
+Tableau de bord temps réel qui centralise l'état des pipelines **Jenkins**, les métriques de qualité **SonarQube** et l'historique des déploiements. Le backend agit comme proxy sécurisé vers les API externes ; le frontend les affiche dans une interface sombre inspirée du Changelog GitHub.
 
-## Architecture
+## Stack
 
-```
-┌─────────────┐      polling 10s      ┌──────────────────┐
-│  React SPA  │  ──────────────────►  │  Node.js/Express │
-│  (Vite)     │  ◄──────────────────  │  (proxy API)     │
-└─────────────┘       JSON/REST       └──────────────────┘
-                                          │   │   │   │
-                          ┌───────────────┘   │   │   └───────────────┐
-                          ▼                    ▼   ▼                   ▼
-                    ┌──────────┐         ┌─────────┐ ┌──────────┐ ┌────────┐
-                    │ MongoDB  │         │ Jenkins │ │SonarQube │ │ Slack  │
-                    └──────────┘         └─────────┘ └──────────┘ └────────┘
-```
+React 18 (Vite, Tailwind) · Node.js + Express · MongoDB · Jenkins · SonarQube · Docker
 
-- **Frontend** : React 18 + Vite, Tailwind CSS, Recharts, React Router, React Toastify
-- **Backend** : Node.js 22 + Express 5, Mongoose, Axios — sert de proxy sécurisé vers les API externes
-- **Base de données** : MongoDB 7.0 (historique des déploiements)
-- **Infrastructure** : Docker + Docker Compose
+## Fonctionnalités
 
-## Pages de l'application
+- **Dashboard** — pipelines groupés par mois, statut temps réel (polling 10 s), métriques SonarQube (note A-E, bugs, code smells, couverture) sur chaque carte, filtres statut/environnement
+- **Détails d'un build** — logs paginés (recherche + surlignage), étapes du pipeline, artefacts, lien commit GitHub
+- **Historique** — statut par environnement (Dev/Staging/Prod) + timeline 7 jours, graphe succès/échec, durée moyenne
+- **Rollback** — rejoue un build stable via l'API Jenkins, avec notification Slack
+- **État des services** — santé MongoDB / Jenkins / SonarQube
 
-| Route | Page | Contenu |
-|-------|------|---------|
-| `/` | Dashboard (Changelog) | Feed des pipelines groupé par mois, statut, métriques SonarQube sur chaque carte, filtres par statut et environnement, action Rollback |
-| `/pipeline/:job/build/:num` | Détails du build | Logs paginés (recherche, surlignage), étapes du pipeline, artefacts, lien commit GitHub |
-| `/history` | Historique | Statut par environnement (Dev/Staging/Prod) + historique 7 jours par projet (timeline, graphe succès/échec, durée moyenne) |
-| `/status` | État des services | Santé MongoDB / Jenkins / SonarQube, actualisée toutes les 15 s |
-
-L'interface adopte un thème sombre inspiré du Changelog GitHub (palette Primer).
-
-### Principes de conception
-
-1. **Proxy API** : le backend masque les identifiants et évite les problèmes CORS
-2. **Polling** : mises à jour temps réel via interrogation client (10 s)
-3. **Dégradation gracieuse** : l'application reste utilisable si un service externe est indisponible
-4. **Container-first** : conçu pour Docker dès l'origine
-
-## Structure du projet
-
-```
-deploy-board/
-├── backend/
-│   ├── config/          # Connexions (mongodb, jenkins, sonarqube)
-│   ├── controllers/     # Logique des endpoints
-│   ├── middleware/      # Gestion centralisée des erreurs
-│   ├── models/          # Schémas Mongoose
-│   ├── routes/          # Définition des routes API
-│   ├── services/        # Clients API externes + cache
-│   ├── utils/           # ApiError, helpers
-│   ├── app.js           # Configuration Express
-│   └── server.js        # Point d'entrée
-├── frontend/
-│   └── src/
-│       ├── api/         # Client Axios centralisé
-│       ├── components/  # Composants React réutilisables
-│       ├── hooks/       # usePolling, etc.
-│       ├── pages/       # Dashboard, BuildDetails, History, Status
-│       └── utils/       # Formatage (dates, durées, statuts)
-├── Dockerfile           # Build multi-étapes
-├── docker-compose.yml   # Orchestration app + MongoDB
-├── sonar-project.properties # Configuration du scan SonarQube
-└── Jenkinsfile          # Pipeline CI/CD 8 étapes
-```
-
-## Démarrage en développement local
-
-### Prérequis
-
-- Node.js 22.x
-- MongoDB 7.0 (local ou Docker)
-- Jenkins 2.x (optionnel pour les données réelles)
-- SonarQube 9.x+ (optionnel)
-
-### Installation
+## Démarrage
 
 ```bash
 # Backend
-cd backend
-npm install
-cp .env.example .env   # puis renseignez vos identifiants
-npm run dev            # démarre sur le port 5001
+cd backend && npm install
+cp .env.example .env          # renseigner les identifiants
+npm run dev                   # http://localhost:5001
 
-# Frontend (dans un autre terminal)
-cd frontend
-npm install
-npm run dev            # démarre sur le port 3000 avec proxy /api vers 5001
+# Frontend
+cd frontend && npm install
+npm run dev                   # http://localhost:3000
 ```
 
-L'application est accessible sur `http://localhost:3000`.
-
-### Accès depuis un autre appareil (réseau local)
-
-Le serveur de développement Vite écoute sur toutes les interfaces (`host: true`). Depuis un autre appareil du même réseau, ouvrez `http://<IP-de-la-machine>:3000`. Si la connexion échoue, autorisez Node.js (port 3000) dans le pare-feu Windows.
-
-## Déploiement Docker
+Ou tout en conteneurs :
 
 ```bash
-# À la racine du projet
-cp .env.example .env   # renseignez JENKINS_USER, JENKINS_TOKEN, etc.
-docker compose up -d --build
+docker compose up -d --build  # http://localhost:5001
 ```
-
-L'application est accessible sur `http://localhost:5001` (disponible sous 60 s).
-
-- MongoDB est exposé sur le port hôte `27018`
-- Les données MongoDB sont persistées dans le volume nommé `deploy-mongo-data`
-- Jenkins est joint via `host.docker.internal:8080`
 
 ## Variables d'environnement
 
-| Variable | Description | Requis |
-|----------|-------------|--------|
-| `NODE_ENV` | `development` ou `production` | Oui |
-| `PORT` | Port d'écoute du backend (5001) | Oui |
-| `MONGODB_URI` | URI de connexion MongoDB | Oui |
-| `JENKINS_URL` | URL de l'instance Jenkins | Oui |
-| `JENKINS_USER` | Utilisateur Jenkins | Oui |
-| `JENKINS_TOKEN` | Token API Jenkins | Oui |
-| `SONARQUBE_URL` | URL de SonarQube | Non |
-| `SONARQUBE_TOKEN` | Token SonarQube | Non |
-| `SLACK_WEBHOOK_URL` | Webhook Slack pour les notifications | Non |
-| `APP_BASE_URL` | URL publique (liens des notifications) | Non |
+```
+PORT=5001
+MONGODB_URI=mongodb://localhost:27017/deploy-board
+JENKINS_URL=...    JENKINS_USER=...    JENKINS_TOKEN=...
+SONARQUBE_URL=...  SONARQUBE_TOKEN=...        # optionnel
+SLACK_WEBHOOK_URL=...                          # optionnel
+```
 
-## API Backend
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/api/jenkins/pipelines` | Liste des pipelines (filtre `?environment=`) |
-| GET | `/api/jenkins/build/:job/:num` | Détails d'un build |
-| GET | `/api/jenkins/build/:job/:num/log` | Log console paginé |
-| POST | `/api/jenkins/build/:job/:num/replay` | Replay (rollback) |
-| GET | `/api/jenkins/builds/:job/stable` | Derniers builds stables |
-| GET | `/api/sonarqube/metrics/:projectKey` | Métriques de qualité |
-| GET | `/api/deployments/history/:pipelineId` | Historique des déploiements |
-| POST | `/api/deployments` | Enregistre un déploiement |
-| GET | `/api/deployments/environments/:env/status` | Statut par environnement |
-| GET | `/health` | Health check (MongoDB, Jenkins, SonarQube) |
+> Le token SonarQube doit être un **User Token** (avec droit « Browse »), pas un Analysis Token.
 
 ## Pipeline Jenkins
 
-Le `Jenkinsfile` définit un pipeline en 8 étapes : **checkout → install → test → sonar → quality gate → docker build → docker push → deploy**. Voir [docs/webhook-setup.md](docs/webhook-setup.md) pour la configuration du webhook GitHub.
+`Jenkinsfile` — 8 étapes : checkout → install → test → sonar → quality gate → docker build → docker push → deploy.
+Configuration du webhook GitHub : voir [`docs/webhook-setup.md`](docs/webhook-setup.md).
 
-## Dépannage
+## API
 
-| Symptôme | Cause probable | Solution |
-|----------|----------------|----------|
-| « Jenkins est indisponible » | URL/identifiants Jenkins incorrects | Vérifiez `JENKINS_URL`, `JENKINS_USER`, `JENKINS_TOKEN` |
-| Métriques « Indisponibles » | SonarQube injoignable | Vérifiez `SONARQUBE_URL` et `SONARQUBE_TOKEN` |
-| Métriques 403 / « Permission insuffisante » | Token SonarQube de type *Analysis* | Générez un **User Token** (My Account → Security) avec droit « Browse » sur le projet |
-| `npm` bloqué sous PowerShell | Politique d'exécution | Utilisez `npm.cmd` |
-| Conteneur app ne démarre pas | MongoDB pas prêt | `docker compose logs app` |
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/jenkins/pipelines` | Liste des pipelines (filtre `?environment=`) |
+| `GET /api/jenkins/build/:job/:num` | Détails d'un build |
+| `GET /api/jenkins/build/:job/:num/log` | Log console paginé |
+| `POST /api/jenkins/build/:job/:num/replay` | Rollback |
+| `GET /api/sonarqube/metrics/:projectKey` | Métriques qualité |
+| `GET /api/deployments/history/:pipelineId` | Historique |
+| `GET /health` | Santé des services |
 
 ## Sécurité
 
-> ⚠️ Le backend actuel n'implémente pas d'authentification utilisateur. Avant toute exposition publique, ajoutez une couche d'authentification (JWT) et une limitation de débit sur les endpoints API.
+Le backend n'a pas d'authentification : ajouter JWT + rate limiting avant toute exposition publique.

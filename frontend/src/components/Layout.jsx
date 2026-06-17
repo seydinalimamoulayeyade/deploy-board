@@ -1,5 +1,6 @@
-import { Outlet, Link, NavLink } from 'react-router-dom'
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
+import { useAuth } from '../context/AuthContext'
 
 /**
  * Mise en page sombre — identité Deploy Board.
@@ -15,6 +16,14 @@ const navLinkClass = ({ isActive }) =>
   }`
 
 const Layout = () => {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <div className="min-h-screen bg-gh-canvas text-gh-fg flex flex-col">
       {/* Barre de navigation */}
@@ -48,6 +57,17 @@ const Layout = () => {
               >
                 SonarQube
               </a>
+              <div className="flex items-center gap-2 pl-1">
+                {user?.username && (
+                  <span className="hidden sm:inline gh-mono-label text-xs text-gh-fg-muted">{user.username}</span>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 text-sm font-medium rounded-md border border-gh-border text-gh-fg-muted hover:text-gh-fg hover:bg-gh-elevated transition-colors"
+                >
+                  Déconnexion
+                </button>
+              </div>
             </div>
           </div>
         </div>

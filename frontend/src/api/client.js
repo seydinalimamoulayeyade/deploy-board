@@ -1,14 +1,47 @@
 import axios from 'axios'
 
+const TOKEN_KEY = 'deployboard_token'
+
+export const getToken = () => localStorage.getItem(TOKEN_KEY)
+export const setToken = (t) => localStorage.setItem(TOKEN_KEY, t)
+export const clearToken = () => localStorage.removeItem(TOKEN_KEY)
+
 /**
- * Client API centralisé
- * Toutes les requêtes passent par le backend (proxy) — Req 10.5
+ * Client API centralisé.
+ * Toutes les requêtes passent par le backend (proxy).
  */
 const apiClient = axios.create({
   baseURL: '/api',
   timeout: 35000,
   headers: { 'Content-Type': 'application/json' },
 })
+
+// Ajoute le JWT à chaque requête
+apiClient.interceptors.request.use((config) => {
+  const token = getToken()
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+// Déconnexion automatique sur 401 (token absent/expiré)
+apiClient.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+      clearToken()
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
+// ----- Auth -----
+export const authApi = {
+  login: (username, password) => apiClient.post('/auth/login', { username, password }),
+  me: () => apiClient.get('/auth/me'),
+}
 
 // ----- Jenkins -----
 export const jenkinsApi = {

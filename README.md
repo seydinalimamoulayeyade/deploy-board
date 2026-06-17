@@ -22,6 +22,17 @@ Deploy Board est un tableau de bord centralisé de déploiement continu qui int�
 - **Base de données** : MongoDB 7.0 (historique des déploiements)
 - **Infrastructure** : Docker + Docker Compose
 
+## Pages de l'application
+
+| Route | Page | Contenu |
+|-------|------|---------|
+| `/` | Dashboard (Changelog) | Feed des pipelines groupé par mois, statut, métriques SonarQube sur chaque carte, filtres par statut et environnement, action Rollback |
+| `/pipeline/:job/build/:num` | Détails du build | Logs paginés (recherche, surlignage), étapes du pipeline, artefacts, lien commit GitHub |
+| `/history` | Historique | Statut par environnement (Dev/Staging/Prod) + historique 7 jours par projet (timeline, graphe succès/échec, durée moyenne) |
+| `/status` | État des services | Santé MongoDB / Jenkins / SonarQube, actualisée toutes les 15 s |
+
+L'interface adopte un thème sombre inspiré du Changelog GitHub (palette Primer).
+
 ### Principes de conception
 
 1. **Proxy API** : le backend masque les identifiants et évite les problèmes CORS
@@ -48,10 +59,11 @@ deploy-board/
 │       ├── api/         # Client Axios centralisé
 │       ├── components/  # Composants React réutilisables
 │       ├── hooks/       # usePolling, etc.
-│       ├── pages/       # Dashboard, BuildDetails
+│       ├── pages/       # Dashboard, BuildDetails, History, Status
 │       └── utils/       # Formatage (dates, durées, statuts)
 ├── Dockerfile           # Build multi-étapes
 ├── docker-compose.yml   # Orchestration app + MongoDB
+├── sonar-project.properties # Configuration du scan SonarQube
 └── Jenkinsfile          # Pipeline CI/CD 8 étapes
 ```
 
@@ -80,6 +92,10 @@ npm run dev            # démarre sur le port 3000 avec proxy /api vers 5001
 ```
 
 L'application est accessible sur `http://localhost:3000`.
+
+### Accès depuis un autre appareil (réseau local)
+
+Le serveur de développement Vite écoute sur toutes les interfaces (`host: true`). Depuis un autre appareil du même réseau, ouvrez `http://<IP-de-la-machine>:3000`. Si la connexion échoue, autorisez Node.js (port 3000) dans le pare-feu Windows.
 
 ## Déploiement Docker
 
@@ -135,6 +151,7 @@ Le `Jenkinsfile` définit un pipeline en 8 étapes : **checkout → install → 
 |----------|----------------|----------|
 | « Jenkins est indisponible » | URL/identifiants Jenkins incorrects | Vérifiez `JENKINS_URL`, `JENKINS_USER`, `JENKINS_TOKEN` |
 | Métriques « Indisponibles » | SonarQube injoignable | Vérifiez `SONARQUBE_URL` et `SONARQUBE_TOKEN` |
+| Métriques 403 / « Permission insuffisante » | Token SonarQube de type *Analysis* | Générez un **User Token** (My Account → Security) avec droit « Browse » sur le projet |
 | `npm` bloqué sous PowerShell | Politique d'exécution | Utilisez `npm.cmd` |
 | Conteneur app ne démarre pas | MongoDB pas prêt | `docker compose logs app` |
 

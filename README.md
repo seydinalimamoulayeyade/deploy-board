@@ -41,9 +41,15 @@ MONGODB_URI=mongodb://localhost:27017/deploy-board
 JENKINS_URL=...    JENKINS_USER=...    JENKINS_TOKEN=...
 SONARQUBE_URL=...  SONARQUBE_TOKEN=...        # optionnel
 SLACK_WEBHOOK_URL=...                          # optionnel
+ADMIN_USERNAME=admin   ADMIN_PASSWORD=...      # ou ADMIN_PASSWORD_HASH (bcrypt)
+JWT_SECRET=...         DEPLOY_INGEST_TOKEN=... # secret JWT + token CI
 ```
 
 > Le token SonarQube doit être un **User Token** (avec droit « Browse »), pas un Analysis Token.
+
+## Authentification
+
+L'API et le dashboard sont protégés par **JWT** (compte admin unique défini dans `.env`). Le frontend redirige vers `/login` si non authentifié. Les routes d'écriture sont protégées ; l'enregistrement des déploiements par le pipeline Jenkins utilise le header `x-deploy-token` (`DEPLOY_INGEST_TOKEN`). Rate limiting actif sur l'API et la connexion.
 
 ## Pipeline Jenkins
 

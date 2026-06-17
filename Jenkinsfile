@@ -7,6 +7,8 @@ pipeline {
     DOCKER_TAG    = "${BUILD_NUMBER}"
     SONAR_PROJECT = "deploy-board"
     DEPLOY_ENV    = "${params.ENVIRONMENT ?: 'production'}"
+    // Token d'ingestion du Deploy Board (credential Jenkins de type "Secret text")
+    DEPLOY_INGEST_TOKEN = credentials('deploy-ingest-token')
   }
 
   options {
@@ -105,6 +107,7 @@ pipeline {
           sh """
             curl -X POST http://host.docker.internal:5001/api/deployments \
               -H 'Content-Type: application/json' \
+              -H "x-deploy-token: ${DEPLOY_INGEST_TOKEN}" \
               -d '{
                 "pipelineId": "${JOB_NAME}",
                 "buildNumber": ${BUILD_NUMBER},
@@ -128,6 +131,7 @@ pipeline {
         sh """
           curl -X POST http://host.docker.internal:5001/api/deployments \
             -H 'Content-Type: application/json' \
+            -H "x-deploy-token: ${DEPLOY_INGEST_TOKEN}" \
             -d '{
               "pipelineId": "${JOB_NAME}",
               "buildNumber": ${BUILD_NUMBER},

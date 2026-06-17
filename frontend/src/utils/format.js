@@ -52,6 +52,30 @@ export const formatDate = (iso) => {
 }
 
 /**
+ * Formate une date ISO en jour+mois court (ex: « 16 juin »)
+ */
+export const formatShort = (iso) => {
+  if (!iso) return '—'
+  try {
+    return format(new Date(iso), 'dd MMM', { locale: fr })
+  } catch {
+    return '—'
+  }
+}
+
+/**
+ * Formate une date ISO en « Mois Année » (ex: « juin 2026 »)
+ */
+export const formatMonthYear = (iso) => {
+  if (!iso) return 'Sans date'
+  try {
+    return format(new Date(iso), 'MMMM yyyy', { locale: fr })
+  } catch {
+    return 'Sans date'
+  }
+}
+
+/**
  * Formate une taille en octets vers Ko/Mo
  */
 export const formatSize = (bytes) => {

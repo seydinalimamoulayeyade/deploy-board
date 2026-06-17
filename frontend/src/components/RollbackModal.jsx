@@ -41,24 +41,24 @@ const RollbackModal = ({ pipeline, onClose, onConfirm }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-gh-subtle border border-gh-border rounded-lg shadow-xl max-w-md w-full">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-gh-border">
+          <h3 className="text-lg font-semibold text-gh-fg">
             Rollback — {pipeline.displayName || pipeline.name}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          <button onClick={onClose} className="text-gh-fg-muted hover:text-gh-fg">✕</button>
         </div>
 
         <div className="px-6 py-4">
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gh-fg-muted mb-4">
             Sélectionnez une version stable vers laquelle revenir :
           </p>
 
           {loading ? (
-            <div className="text-center py-8 text-gray-400">Chargement...</div>
+            <div className="text-center py-8 text-gh-fg-muted">Chargement...</div>
           ) : stableBuilds.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">Aucun build stable disponible</div>
+            <div className="text-center py-8 text-gh-fg-muted">Aucun build stable disponible</div>
           ) : (
             <ul className="space-y-2">
               {stableBuilds.map((build) => (
@@ -66,10 +66,10 @@ const RollbackModal = ({ pipeline, onClose, onConfirm }) => {
                   <button
                     disabled={submitting}
                     onClick={() => handleSelect(build)}
-                    className="w-full flex justify-between items-center px-4 py-3 border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                    className="w-full flex justify-between items-center px-4 py-3 border border-gh-border rounded-md hover:bg-gh-elevated disabled:opacity-50 transition-colors"
                   >
-                    <span className="font-medium text-gray-900">Build #{build.number}</span>
-                    <span className="text-sm text-gray-500">{formatDate(build.timestamp)}</span>
+                    <span className="font-medium text-gh-fg">Build #{build.number}</span>
+                    <span className="text-sm text-gh-fg-muted">{formatDate(build.timestamp)}</span>
                   </button>
                 </li>
               ))}

@@ -5,7 +5,7 @@ import { getStatusConfig, formatDuration } from '../utils/format'
  */
 const StageTimeline = ({ stages = [] }) => {
   if (!stages.length) {
-    return <p className="text-sm text-gray-400">Aucune étape disponible</p>
+    return <p className="text-sm text-gh-fg-muted">Aucune étape disponible</p>
   }
 
   return (
@@ -18,7 +18,7 @@ const StageTimeline = ({ stages = [] }) => {
               <div className="text-xs font-semibold capitalize">{stage.name}</div>
               <div className="text-xs opacity-75">{formatDuration(stage.duration)}</div>
             </div>
-            {idx < stages.length - 1 && <span className="mx-1 text-gray-300">→</span>}
+            {idx < stages.length - 1 && <span className="mx-1 text-gh-fg-subtle">→</span>}
           </div>
         )
       })}

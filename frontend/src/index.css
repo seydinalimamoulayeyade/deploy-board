@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-  color: #1f2328;
-  background-color: #ffffff;
+  color: #e6edf3;
+  background-color: #0d1117;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -19,24 +19,35 @@ code, pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-/* Timeline du changelog : ligne verticale reliant les entrées */
-.changelog-timeline {
-  position: relative;
+/* Grille subtile de l'en-tête (façon Changelog GitHub) */
+.gh-grid {
+  background-color: #0d1117;
+  background-image:
+    linear-gradient(to right, rgba(48,54,61,0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(48,54,61,0.35) 1px, transparent 1px);
+  background-size: 42px 42px;
 }
 
-/* Barre de défilement discrète façon GitHub */
+/* Libellés monospace majuscules */
+.gh-mono-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Barre de défilement sombre */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #f6f8fa;
+  background: #0d1117;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d0d7de;
+  background: #30363d;
   border-radius: 6px;
-  border: 2px solid #f6f8fa;
+  border: 2px solid #0d1117;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #afb8c1;
+  background: #484f58;
 }

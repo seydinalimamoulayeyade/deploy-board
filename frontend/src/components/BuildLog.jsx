@@ -45,23 +45,23 @@ const BuildLog = ({ lines = [], pagination, onPageChange }) => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher dans le log..."
-          className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-1.5 border border-gh-border bg-gh-canvas text-gh-fg rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gh-accent placeholder:text-gh-fg-subtle"
         />
         <button
           onClick={handleCopy}
-          className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 whitespace-nowrap"
+          className="px-3 py-1.5 border border-gh-border bg-gh-subtle text-gh-fg text-sm rounded-md hover:bg-gh-elevated whitespace-nowrap"
         >
           Copier
         </button>
       </div>
 
-      <div className="bg-gray-900 rounded-md p-4 overflow-auto max-h-[500px] font-mono text-xs">
+      <div className="bg-gh-inset border border-gh-border rounded-md p-4 overflow-auto max-h-[500px] font-mono text-xs">
         {filtered.length === 0 ? (
-          <p className="text-gray-500">Aucune ligne correspondante</p>
+          <p className="text-gh-fg-subtle">Aucune ligne correspondante</p>
         ) : (
           filtered.map((l) => (
             <div key={l.n} className={`flex ${lineClass(l.text)}`}>
-              <span className="select-none text-gray-600 w-12 flex-shrink-0 text-right pr-3">{l.n}</span>
+              <span className="select-none text-gh-fg-subtle w-12 flex-shrink-0 text-right pr-3">{l.n}</span>
               <span className="whitespace-pre-wrap break-all">{l.text}</span>
             </div>
           ))
@@ -70,21 +70,21 @@ const BuildLog = ({ lines = [], pagination, onPageChange }) => {
 
       {/* Pagination (Req 3.6) */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-3 text-sm">
+        <div className="flex items-center justify-center gap-3 text-sm">
           <button
             disabled={pagination.currentPage <= 1}
             onClick={() => onPageChange(pagination.currentPage - 1)}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="px-3 py-1 border border-gh-border rounded text-gh-fg disabled:opacity-40"
           >
             Précédent
           </button>
-          <span className="text-gray-600">
+          <span className="text-gh-fg-muted">
             Page {pagination.currentPage} / {pagination.totalPages}
           </span>
           <button
             disabled={pagination.currentPage >= pagination.totalPages}
             onClick={() => onPageChange(pagination.currentPage + 1)}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="px-3 py-1 border border-gh-border rounded text-gh-fg disabled:opacity-40"
           >
             Suivant
           </button>

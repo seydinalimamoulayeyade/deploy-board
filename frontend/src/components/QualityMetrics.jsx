@@ -7,12 +7,12 @@ const RATING_COLORS = {
 }
 
 const Trend = ({ value, invert = false }) => {
-  if (value === 0 || value == null) return <span className="text-gray-400">→ 0</span>
+  if (value === 0 || value == null) return <span className="text-gh-fg-subtle">→ 0</span>
   // Pour bugs/code smells, une baisse est positive (invert=true)
   const isGood = invert ? value < 0 : value > 0
   const arrow = value > 0 ? '↑' : '↓'
   return (
-    <span className={isGood ? 'text-green-600' : 'text-red-600'}>
+    <span className={isGood ? 'text-gh-success-fg' : 'text-gh-danger-fg'}>
       {arrow} {Math.abs(value)}
     </span>
   )
@@ -21,7 +21,7 @@ const Trend = ({ value, invert = false }) => {
 const QualityMetrics = ({ metrics }) => {
   if (!metrics || metrics.available === false) {
     return (
-      <div className="text-sm text-gray-400 italic">Métriques de qualité indisponibles</div>
+      <div className="text-sm text-gh-fg-muted italic">Métriques de qualité indisponibles</div>
     )
   }
 
@@ -32,7 +32,7 @@ const QualityMetrics = ({ metrics }) => {
     <div className="space-y-3">
       {/* Quality Gate prominent en cas d'échec (Req 4.7) */}
       {gateFailed && (
-        <div className="bg-red-100 border border-red-300 rounded px-3 py-2 text-sm font-semibold text-red-800">
+        <div className="bg-gh-danger-subtle border border-gh-danger-fg/40 rounded px-3 py-2 text-sm font-semibold text-gh-danger-fg">
           ⚠️ Quality Gate échouée
         </div>
       )}
@@ -45,17 +45,17 @@ const QualityMetrics = ({ metrics }) => {
 
         <div className="grid grid-cols-3 gap-4 text-sm flex-1">
           <div>
-            <div className="text-gray-500">Bugs</div>
-            <div className="font-semibold">{bugs} <Trend value={trends.bugs} invert /></div>
+            <div className="text-gh-fg-muted">Bugs</div>
+            <div className="font-semibold text-gh-fg">{bugs} <Trend value={trends.bugs} invert /></div>
           </div>
           <div>
-            <div className="text-gray-500">Code Smells</div>
-            <div className="font-semibold">{codeSmells} <Trend value={trends.codeSmells} invert /></div>
+            <div className="text-gh-fg-muted">Code Smells</div>
+            <div className="font-semibold text-gh-fg">{codeSmells} <Trend value={trends.codeSmells} invert /></div>
           </div>
           {coverage != null && (
             <div>
-              <div className="text-gray-500">Couverture</div>
-              <div className="font-semibold">{coverage}% <Trend value={trends.coverage} /></div>
+              <div className="text-gh-fg-muted">Couverture</div>
+              <div className="font-semibold text-gh-fg">{coverage}% <Trend value={trends.coverage} /></div>
             </div>
           )}
         </div>
@@ -63,9 +63,9 @@ const QualityMetrics = ({ metrics }) => {
 
       {/* Barre de couverture (Req 4.5) */}
       {coverage != null && (
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gh-elevated rounded-full h-2">
           <div
-            className="bg-blue-500 h-2 rounded-full transition-all"
+            className="bg-gh-accent h-2 rounded-full transition-all"
             style={{ width: `${Math.min(coverage, 100)}%` }}
           />
         </div>

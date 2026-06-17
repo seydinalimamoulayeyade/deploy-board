@@ -54,16 +54,16 @@ const DeploymentHistory = ({ pipelineId }) => {
   )
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+    <div className="bg-gh-subtle border border-gh-border rounded-md p-6 space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900">Historique des déploiements (7 jours)</h2>
+        <h2 className="text-lg font-semibold text-gh-fg">Historique des déploiements (7 jours)</h2>
         <select
           value={filter}
           onChange={(e) => { setFilter(e.target.value); setPage(1) }}
-          className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+          className="px-3 py-1.5 border border-gh-border bg-gh-canvas text-gh-fg rounded-md text-sm focus:outline-none"
         >
           {STATUS_FILTERS.map((f) => (
-            <option key={f.value} value={f.value}>{f.label}</option>
+            <option key={f.value} value={f.value} className="bg-gh-subtle">{f.label}</option>
           ))}
         </select>
       </div>
@@ -71,17 +71,17 @@ const DeploymentHistory = ({ pipelineId }) => {
       {/* Statistiques (Req 5.3, 5.5) */}
       {stats && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gray-50 rounded-md p-3 text-center">
-            <div className="text-2xl font-bold text-gray-900">{stats.totalBuilds}</div>
-            <div className="text-xs text-gray-500">Total builds</div>
+          <div className="bg-gh-canvas border border-gh-border rounded-md p-3 text-center">
+            <div className="text-2xl font-bold text-gh-fg">{stats.totalBuilds}</div>
+            <div className="text-xs text-gh-fg-muted">Total builds</div>
           </div>
-          <div className="bg-gray-50 rounded-md p-3 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.successRate}%</div>
-            <div className="text-xs text-gray-500">Taux de réussite</div>
+          <div className="bg-gh-canvas border border-gh-border rounded-md p-3 text-center">
+            <div className="text-2xl font-bold text-gh-success-fg">{stats.successRate}%</div>
+            <div className="text-xs text-gh-fg-muted">Taux de réussite</div>
           </div>
-          <div className="bg-gray-50 rounded-md p-3 text-center">
-            <div className="text-2xl font-bold text-gray-900">{formatDuration(stats.avgDuration)}</div>
-            <div className="text-xs text-gray-500">Durée moyenne</div>
+          <div className="bg-gh-canvas border border-gh-border rounded-md p-3 text-center">
+            <div className="text-2xl font-bold text-gh-fg">{formatDuration(stats.avgDuration)}</div>
+            <div className="text-xs text-gh-fg-muted">Durée moyenne</div>
           </div>
         </div>
       )}
@@ -90,9 +90,9 @@ const DeploymentHistory = ({ pipelineId }) => {
       <div className="h-48">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
+            <XAxis dataKey="name" tick={{ fill: '#8b949e', fontSize: 12 }} />
+            <YAxis allowDecimals={false} tick={{ fill: '#8b949e', fontSize: 12 }} />
+            <Tooltip contentStyle={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3' }} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
             <Bar dataKey="value">
               {chartData.map((entry, i) => (
                 <Cell key={i} fill={entry.color} />
@@ -104,12 +104,12 @@ const DeploymentHistory = ({ pipelineId }) => {
 
       {/* Tableau (Req 5.4) */}
       {loading ? (
-        <div className="text-center py-6 text-gray-400">Chargement...</div>
+        <div className="text-center py-6 text-gh-fg-muted">Chargement...</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-500 border-b">
+              <tr className="text-left text-gh-fg-muted border-b border-gh-border">
                 <th className="py-2 pr-4">Build</th>
                 <th className="py-2 pr-4">Statut</th>
                 <th className="py-2 pr-4">Durée</th>
@@ -121,7 +121,7 @@ const DeploymentHistory = ({ pipelineId }) => {
               {builds.map((b) => {
                 const cfg = getStatusConfig(b.status)
                 return (
-                  <tr key={b._id || b.buildNumber} className="border-b border-gray-100">
+                  <tr key={b._id || b.buildNumber} className="border-b border-gh-border/60 text-gh-fg">
                     <td className="py-2 pr-4 font-medium">#{b.buildNumber}</td>
                     <td className="py-2 pr-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs ${cfg.pill}`}>{cfg.label}</span>
@@ -133,7 +133,7 @@ const DeploymentHistory = ({ pipelineId }) => {
                 )
               })}
               {builds.length === 0 && (
-                <tr><td colSpan="5" className="py-6 text-center text-gray-400">Aucun déploiement</td></tr>
+                <tr><td colSpan="5" className="py-6 text-center text-gh-fg-muted">Aucun déploiement</td></tr>
               )}
             </tbody>
           </table>
@@ -142,10 +142,10 @@ const DeploymentHistory = ({ pipelineId }) => {
 
       {/* Pagination (Req 14.4) */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-3 text-sm">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1 border rounded disabled:opacity-40">Précédent</button>
-          <span className="text-gray-600">Page {pagination.currentPage} / {pagination.totalPages}</span>
-          <button disabled={page >= pagination.totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1 border rounded disabled:opacity-40">Suivant</button>
+        <div className="flex items-center justify-center gap-3 text-sm">
+          <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1 border border-gh-border rounded text-gh-fg disabled:opacity-40">Précédent</button>
+          <span className="text-gh-fg-muted">Page {pagination.currentPage} / {pagination.totalPages}</span>
+          <button disabled={page >= pagination.totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1 border border-gh-border rounded text-gh-fg disabled:opacity-40">Suivant</button>
         </div>
       )}
     </div>

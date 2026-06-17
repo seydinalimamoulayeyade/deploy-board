@@ -3,6 +3,9 @@ const cors       = require('cors');
 const compression = require('compression');
 const path       = require('path');
 const errorHandler       = require('./middleware/error.middleware');
+const requireAuth        = require('./middleware/auth.middleware');
+const { apiLimiter }     = require('./middleware/rateLimit.middleware');
+const authRoutes         = require('./routes/auth.routes');
 const jenkinsRoutes      = require('./routes/jenkins.routes');
 const sonarqubeRoutes    = require('./routes/sonarqube.routes');
 const deploymentsRoutes  = require('./routes/deployments.routes');
@@ -16,9 +19,15 @@ app.use(compression()); // Compression gzip des réponses (Req 14.2)
 app.use(cors());
 app.use(express.json());
 
-// Routes API
-app.use('/api/jenkins',     jenkinsRoutes);
-app.use('/api/sonarqube',   sonarqubeRoutes);
+// Limitation de débit sur toute l'API
+app.use('/api', apiLimiter);
+
+// Authentification (login public, reste protégé)
+app.use('/api/auth', authRoutes);
+
+// Routes API protégées par JWT
+app.use('/api/jenkins',     requireAuth, jenkinsRoutes);
+app.use('/api/sonarqube',   requireAuth, sonarqubeRoutes);
 app.use('/api/deployments', deploymentsRoutes);
 
 // Health check avec connectivité des services (Req 12.6)

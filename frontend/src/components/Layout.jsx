@@ -28,6 +28,7 @@ const Layout = () => {
               <NavLink to="/" end className={navLinkClass}>
                 Deploy Board
               </NavLink>
+              <NavLink to="/history" className={navLinkClass}>Historique</NavLink>
               <NavLink to="/status" className={navLinkClass}>État des services</NavLink>
             </nav>
             <div className="ml-auto flex items-center gap-3">

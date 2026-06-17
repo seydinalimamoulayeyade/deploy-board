@@ -16,11 +16,16 @@ const getProjectMetrics = async (req, res, next) => {
     const metrics = await sonarQubeService.getProjectMetrics(projectKey);
     res.status(200).json({ status: 'success', data: metrics });
   } catch (err) {
-    // Dégradation gracieuse : SonarQube indisponible (Req 13.2)
-    if (err.statusCode === 503) {
+    // Dégradation gracieuse : SonarQube indisponible ou permission insuffisante (Req 13.2)
+    if ([503, 401, 403].includes(err.statusCode)) {
       return res.status(200).json({
         status: 'success',
-        data: { projectKey: req.params.projectKey, available: false, message: 'Indisponible' },
+        data: {
+          projectKey: req.params.projectKey,
+          available: false,
+          message: 'Indisponible',
+          reason: err.message,
+        },
       });
     }
     next(err);

@@ -127,8 +127,11 @@ class SonarQubeService {
   handleError(error) {
     if (error.response) {
       const status = error.response.status;
-      if (status === 401 || status === 403) {
-        return new ApiError(status, 'Authentification SonarQube échouée');
+      if (status === 401) {
+        return new ApiError(401, 'Authentification SonarQube échouée');
+      }
+      if (status === 403) {
+        return new ApiError(403, 'Permission SonarQube insuffisante (un User Token avec droit « Browse » est requis pour lire les mesures)');
       }
       if (status === 404) {
         return new ApiError(404, 'Projet SonarQube introuvable');

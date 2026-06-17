@@ -14,7 +14,7 @@ const StageTimeline = ({ stages = [] }) => {
         const cfg = getStatusConfig(stage.status)
         return (
           <div key={idx} className="flex items-center">
-            <div className={`px-3 py-2 rounded-md ${cfg.bg} ${cfg.text} min-w-[110px]`}>
+            <div className={`px-3 py-2 rounded-md ${cfg.pill} min-w-[110px]`}>
               <div className="text-xs font-semibold capitalize">{stage.name}</div>
               <div className="text-xs opacity-75">{formatDuration(stage.duration)}</div>
             </div>

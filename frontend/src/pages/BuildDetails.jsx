@@ -64,7 +64,7 @@ const BuildDetails = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold text-gray-900">Build #{build.buildNumber}</h2>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${status.bg} ${status.text}`}>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${status.pill}`}>
                 {status.label}
               </span>
             </div>

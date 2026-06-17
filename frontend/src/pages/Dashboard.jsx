@@ -2,14 +2,27 @@ import { useState, useCallback } from 'react'
 import { useAppContext } from '../context/AppContext'
 import { jenkinsApi } from '../api/client'
 import usePolling from '../hooks/usePolling'
-import EnvironmentSelector from '../components/EnvironmentSelector'
 import PipelineCard from '../components/PipelineCard'
 import ErrorBanner from '../components/ErrorBanner'
 import RollbackModal from '../components/RollbackModal'
 
+const ENVIRONMENTS = [
+  { value: 'dev', label: 'Développement' },
+  { value: 'staging', label: 'Pré-production' },
+  { value: 'production', label: 'Production' },
+]
+
+const STATUS_LEGEND = [
+  { label: 'Réussi', dot: 'bg-gh-success-emphasis' },
+  { label: 'Échoué', dot: 'bg-gh-danger-fg' },
+  { label: 'En cours', dot: 'bg-gh-attention-fg' },
+  { label: 'Annulé', dot: 'bg-gh-fg-subtle' },
+]
+
 /**
- * Tableau de bord principal (Req 1.x, 2.x, 7.x)
- * Polling toutes les 10 secondes des pipelines Jenkins.
+ * Tableau de bord — feed façon Changelog GitHub.
+ * Colonne principale : timeline des pipelines.
+ * Sidebar : filtres d'environnement et légende des statuts.
  */
 const Dashboard = () => {
   const { selectedEnvironment, setSelectedEnvironment, pipelines, setPipelines } = useAppContext()
@@ -23,44 +36,75 @@ const Dashboard = () => {
       setPipelines(res.data.data.pipelines || [])
       setError(null)
     } catch (err) {
-      const msg = err.response?.data?.message || 'Jenkins est indisponible'
-      setError(msg)
+      setError(err.response?.data?.message || 'Jenkins est indisponible')
     } finally {
       setLoading(false)
     }
   }, [selectedEnvironment, setPipelines])
 
-  // Polling 10s (Req 2.1) — s'arrête quand l'onglet est masqué (Req 14.3)
   usePolling(fetchPipelines, 10000, true)
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900">Environnement</h2>
-        <EnvironmentSelector
-          currentEnvironment={selectedEnvironment}
-          onChange={setSelectedEnvironment}
-        />
-      </div>
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_296px] gap-12">
+      {/* Colonne principale : feed timeline */}
+      <section className="order-2 lg:order-1 min-w-0">
+        {error && <div className="mb-6"><ErrorBanner message={error} /></div>}
 
-      <ErrorBanner message={error} />
-
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Pipelines</h2>
         {loading && pipelines.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">Chargement des pipelines...</div>
+          <p className="text-gh-fg-muted py-12">Chargement des pipelines…</p>
         ) : pipelines.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center text-gray-500">
-            Aucun pipeline disponible pour l'environnement « {selectedEnvironment} »
+          <div className="border border-gh-border rounded-md p-12 text-center text-gh-fg-muted bg-gh-subtle">
+            Aucun pipeline pour l'environnement « {selectedEnvironment} ».
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="changelog-timeline border-l-2 border-gh-muted pl-6 sm:pl-8 space-y-10">
             {pipelines.map((p) => (
               <PipelineCard key={p.id || p.name} pipeline={p} onRollback={setRollbackTarget} />
             ))}
           </div>
         )}
-      </div>
+      </section>
+
+      {/* Sidebar : filtres */}
+      <aside className="order-1 lg:order-2 space-y-8">
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gh-fg-muted mb-3">
+            Environnement
+          </h2>
+          <nav className="flex flex-col gap-1">
+            {ENVIRONMENTS.map((env) => {
+              const active = selectedEnvironment === env.value
+              return (
+                <button
+                  key={env.value}
+                  onClick={() => setSelectedEnvironment(env.value)}
+                  className={`text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+                    active
+                      ? 'bg-gh-accent-subtle text-gh-accent font-semibold'
+                      : 'text-gh-fg hover:bg-gh-subtle'
+                  }`}
+                >
+                  {env.label}
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gh-fg-muted mb-3">
+            Légende des statuts
+          </h2>
+          <ul className="space-y-2">
+            {STATUS_LEGEND.map((s) => (
+              <li key={s.label} className="flex items-center gap-2 text-sm text-gh-fg">
+                <span className={`w-2.5 h-2.5 rounded-full ${s.dot}`} />
+                {s.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </aside>
 
       {rollbackTarget && (
         <RollbackModal

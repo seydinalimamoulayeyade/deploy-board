@@ -1,71 +1,96 @@
 import { useNavigate } from 'react-router-dom'
-import { getStatusConfig, formatDuration, formatRelative } from '../utils/format'
+import { getStatusConfig, formatDuration, formatRelative, formatDate } from '../utils/format'
 import QualityMetrics from './QualityMetrics'
 
 /**
- * Carte d'un pipeline (Req 1.2-1.7)
- * Affiche le statut, les métadonnées du build et les actions.
+ * Entrée de pipeline façon Changelog GitHub :
+ * - point sur la timeline
+ * - date (façon « July 10 »)
+ * - titre cliquable
+ * - pastilles de statut/environnement
+ * - métadonnées et actions
  */
 const PipelineCard = ({ pipeline, onRollback }) => {
   const navigate = useNavigate()
-  const { name, displayName, lastBuild, qualityMetrics } = pipeline
+  const { name, displayName, lastBuild, qualityMetrics, environment } = pipeline
 
-  // Aucun build (Req 1.8)
-  if (!lastBuild) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-5 border-l-4 border-gray-300">
-        <h3 className="font-semibold text-gray-900">{displayName || name}</h3>
-        <p className="text-sm text-gray-400 mt-2">Aucun build</p>
-      </div>
-    )
-  }
-
-  const status = getStatusConfig(lastBuild.status)
+  const status = getStatusConfig(lastBuild?.status)
 
   const handleViewDetails = () => {
-    navigate(`/pipeline/${name}/build/${lastBuild.number}`)
+    if (lastBuild) navigate(`/pipeline/${name}/build/${lastBuild.number}`)
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="font-semibold text-gray-900">{displayName || name}</h3>
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
-          <span className={`w-2 h-2 rounded-full mr-1.5 ${status.dot} ${lastBuild.status === 'RUNNING' ? 'animate-pulse' : ''}`} />
-          {status.label}
-        </span>
+    <article className="relative">
+      {/* Point sur la timeline */}
+      <span
+        className={`absolute -left-[33px] sm:-left-[41px] top-1.5 w-4 h-4 rounded-full border-4 border-gh-canvas ${status.dot} ${
+          lastBuild?.status === 'RUNNING' ? 'animate-pulse' : ''
+        }`}
+        aria-hidden="true"
+      />
+
+      {/* Date */}
+      <div className="text-sm text-gh-fg-muted mb-1">
+        {lastBuild ? formatDate(lastBuild.timestamp) : 'Aucun build'}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
-        <div>Build : <span className="font-medium text-gray-900">#{lastBuild.number}</span></div>
-        <div>Durée : <span className="font-medium text-gray-900">{formatDuration(lastBuild.duration)}</span></div>
-        <div>Branche : <span className="font-medium text-gray-900">{lastBuild.branch || 'N/A'}</span></div>
-        <div>Auteur : <span className="font-medium text-gray-900">{lastBuild.author || 'N/A'}</span></div>
-      </div>
-
-      <div className="text-xs text-gray-400 mb-3">{formatRelative(lastBuild.timestamp)}</div>
-
-      {qualityMetrics && (
-        <div className="border-t border-gray-100 pt-3 mb-3">
-          <QualityMetrics metrics={qualityMetrics} />
-        </div>
-      )}
-
-      <div className="flex space-x-2">
+      {/* Titre + pastilles */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-2">
         <button
           onClick={handleViewDetails}
-          className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+          className="text-xl font-semibold text-gh-accent hover:underline text-left"
         >
-          Voir les détails
+          {displayName || name}
         </button>
-        <button
-          onClick={() => onRollback(pipeline)}
-          className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors"
-        >
-          Rollback
-        </button>
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${status.pill}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+          {status.label}
+        </span>
+        {environment && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border border-gh-border text-gh-fg-muted">
+            {environment}
+          </span>
+        )}
       </div>
-    </div>
+
+      {!lastBuild ? (
+        <p className="text-sm text-gh-fg-muted">Ce pipeline n'a pas encore d'historique de build.</p>
+      ) : (
+        <>
+          {/* Métadonnées */}
+          <p className="text-sm text-gh-fg-muted mb-3">
+            Build <span className="font-medium text-gh-fg">#{lastBuild.number}</span>
+            {' · '}durée {formatDuration(lastBuild.duration)}
+            {lastBuild.branch && <>{' · '}branche <span className="font-mono text-gh-fg">{lastBuild.branch}</span></>}
+            {lastBuild.author && <>{' · '}par {lastBuild.author}</>}
+            {' · '}{formatRelative(lastBuild.timestamp)}
+          </p>
+
+          {qualityMetrics && (
+            <div className="mb-4 p-3 border border-gh-border rounded-md bg-gh-subtle">
+              <QualityMetrics metrics={qualityMetrics} />
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleViewDetails}
+              className="px-3 py-1.5 text-sm font-medium rounded-md border border-gh-border bg-gh-subtle text-gh-fg hover:bg-gh-inset transition-colors"
+            >
+              Voir les détails
+            </button>
+            <button
+              onClick={() => onRollback(pipeline)}
+              className="px-3 py-1.5 text-sm font-medium rounded-md border border-gh-border bg-gh-canvas text-gh-fg hover:bg-gh-subtle transition-colors"
+            >
+              Rollback
+            </button>
+          </div>
+        </>
+      )}
+    </article>
   )
 }
 

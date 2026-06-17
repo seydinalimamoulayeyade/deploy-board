@@ -5,11 +5,11 @@ import { fr } from 'date-fns/locale'
  * Couleurs et libellés des statuts de build (français)
  */
 export const STATUS_CONFIG = {
-  SUCCESS:  { label: 'Réussi',     bg: 'bg-green-100',  text: 'text-green-800',  dot: 'bg-green-500' },
-  FAILED:   { label: 'Échoué',     bg: 'bg-red-100',    text: 'text-red-800',    dot: 'bg-red-500' },
-  RUNNING:  { label: 'En cours',   bg: 'bg-amber-100',  text: 'text-amber-800',  dot: 'bg-amber-500' },
-  ABORTED:  { label: 'Annulé',     bg: 'bg-gray-100',   text: 'text-gray-700',   dot: 'bg-gray-500' },
-  UNKNOWN:  { label: 'Inconnu',    bg: 'bg-gray-100',   text: 'text-gray-700',   dot: 'bg-gray-400' },
+  SUCCESS:  { label: 'Réussi',   pill: 'bg-gh-success-subtle text-gh-success-fg',   dot: 'bg-gh-success-emphasis' },
+  FAILED:   { label: 'Échoué',   pill: 'bg-gh-danger-subtle text-gh-danger-fg',     dot: 'bg-gh-danger-fg' },
+  RUNNING:  { label: 'En cours', pill: 'bg-gh-attention-subtle text-gh-attention-fg', dot: 'bg-gh-attention-fg' },
+  ABORTED:  { label: 'Annulé',   pill: 'bg-gh-inset text-gh-fg-muted',               dot: 'bg-gh-fg-subtle' },
+  UNKNOWN:  { label: 'Inconnu',  pill: 'bg-gh-inset text-gh-fg-muted',               dot: 'bg-gh-fg-subtle' },
 }
 
 export const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.UNKNOWN

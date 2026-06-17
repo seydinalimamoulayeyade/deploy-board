@@ -124,7 +124,7 @@ const DeploymentHistory = ({ pipelineId }) => {
                   <tr key={b._id || b.buildNumber} className="border-b border-gray-100">
                     <td className="py-2 pr-4 font-medium">#{b.buildNumber}</td>
                     <td className="py-2 pr-4">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${cfg.bg} ${cfg.text}`}>{cfg.label}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${cfg.pill}`}>{cfg.label}</span>
                     </td>
                     <td className="py-2 pr-4">{formatDuration(b.duration)}</td>
                     <td className="py-2 pr-4">{formatDate(b.timestamp)}</td>

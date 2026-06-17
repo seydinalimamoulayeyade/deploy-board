@@ -37,4 +37,9 @@ export const deploymentsApi = {
     apiClient.get(`/deployments/environments/${environment}/status`),
 }
 
+// ----- Santé des services (endpoint racine /health, hors /api) -----
+export const healthApi = {
+  get: () => axios.get('/health', { timeout: 10000 }),
+}
+
 export default apiClient

@@ -8,10 +8,11 @@ import Dashboard from './pages/Dashboard'
 
 // Code splitting : chargement différé des pages lourdes (Req 14.1)
 const BuildDetails = lazy(() => import('./pages/BuildDetails'))
+const Status = lazy(() => import('./pages/Status'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 const PageLoader = () => (
-  <div className="text-center py-12 text-gray-400">Chargement...</div>
+  <div className="text-center py-12 text-gh-fg-muted">Chargement...</div>
 )
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="pipeline/:jobName/build/:buildNumber" element={<BuildDetails />} />
+              <Route path="status" element={<Status />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

@@ -1,4 +1,5 @@
 const jenkinsService = require('../services/jenkinsService');
+const sonarQubeService = require('../services/sonarQubeService');
 const slackService = require('../services/slackService');
 const ApiError = require('../utils/ApiError');
 
@@ -9,16 +10,36 @@ const ApiError = require('../utils/ApiError');
  */
 
 /**
+ * Enrichit les pipelines avec les métriques SonarQube correspondantes.
+ * La clé de projet Sonar est supposée identique au nom du job Jenkins.
+ * Résilient : un échec (projet absent, Sonar indisponible) n'attache rien.
+ */
+const enrichWithSonar = async (pipelines) => {
+  const results = await Promise.allSettled(
+    pipelines.map((p) => sonarQubeService.getProjectMetrics(p.name))
+  );
+  return pipelines.map((p, i) => {
+    const r = results[i];
+    if (r.status === 'fulfilled' && r.value && r.value.available !== false) {
+      return { ...p, qualityMetrics: r.value };
+    }
+    return p;
+  });
+};
+
+/**
  * GET /api/jenkins/pipelines
- * Récupère tous les pipelines Jenkins, avec filtre optionnel par environnement
+ * Récupère tous les pipelines Jenkins, avec filtre optionnel par environnement,
+ * enrichis des métriques SonarQube quand elles existent.
  */
 const getAllPipelines = async (req, res, next) => {
   try {
     const { environment } = req.query;
     const pipelines = await jenkinsService.getAllJobs(environment || null);
+    const enriched = await enrichWithSonar(pipelines);
     res.status(200).json({
       status: 'success',
-      data: { pipelines },
+      data: { pipelines: enriched },
     });
   } catch (err) {
     next(err);

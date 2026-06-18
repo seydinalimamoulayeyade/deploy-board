@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { getStatusConfig, formatDuration, formatShort } from '../utils/format'
+import { useAuth } from '../context/AuthContext'
 import QualityMetrics from './QualityMetrics'
 
 /**
@@ -10,6 +11,7 @@ import QualityMetrics from './QualityMetrics'
  */
 const PipelineCard = ({ pipeline, onRollback }) => {
   const navigate = useNavigate()
+  const { isAdmin } = useAuth()
   const { name, displayName, lastBuild, qualityMetrics, environment } = pipeline
 
   const status = getStatusConfig(lastBuild?.status)
@@ -76,12 +78,14 @@ const PipelineCard = ({ pipeline, onRollback }) => {
             >
               Détails
             </button>
-            <button
-              onClick={() => onRollback(pipeline)}
-              className="px-3 py-1.5 text-xs gh-mono-label rounded-md border border-gh-border text-gh-fg-muted hover:text-gh-fg hover:bg-gh-subtle transition-colors"
-            >
-              Rollback
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => onRollback(pipeline)}
+                className="px-3 py-1.5 text-xs gh-mono-label rounded-md border border-gh-border text-gh-fg-muted hover:text-gh-fg hover:bg-gh-subtle transition-colors"
+              >
+                Rollback
+              </button>
+            )}
           </div>
         </>
       )}

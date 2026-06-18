@@ -40,6 +40,7 @@ apiClient.interceptors.response.use(
 // ----- Auth -----
 export const authApi = {
   login: (username, password) => apiClient.post('/auth/login', { username, password }),
+  guest: () => apiClient.post('/auth/guest'),
   me: () => apiClient.get('/auth/me'),
 }
 

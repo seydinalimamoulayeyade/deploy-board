@@ -8,7 +8,7 @@ import Logo from '../components/Logo'
  * Page de connexion (admin unique, JWT).
  */
 const Login = () => {
-  const { login } = useAuth()
+  const { login, loginAsGuest } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -24,6 +24,19 @@ const Login = () => {
     } catch (err) {
       const msg = err.response?.data?.message || 'Échec de la connexion'
       toast.error(msg)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleGuest = async () => {
+    setSubmitting(true)
+    try {
+      await loginAsGuest()
+      toast.info('Mode démo — lecture seule')
+      navigate('/', { replace: true })
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Accès invité indisponible')
     } finally {
       setSubmitting(false)
     }
@@ -69,6 +82,21 @@ const Login = () => {
             className="w-full py-2 rounded-md text-white font-medium bg-gradient-to-r from-brand to-brand-cyan hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {submitting ? 'Connexion…' : 'Se connecter'}
+          </button>
+
+          <div className="flex items-center gap-3 pt-1">
+            <span className="flex-1 h-px bg-gh-border" />
+            <span className="gh-mono-label text-xs text-gh-fg-subtle">ou</span>
+            <span className="flex-1 h-px bg-gh-border" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGuest}
+            disabled={submitting}
+            className="w-full py-2 rounded-md font-medium border border-gh-border text-gh-fg hover:bg-gh-elevated disabled:opacity-50 transition-colors"
+          >
+            Explorer la démo (lecture seule)
           </button>
         </form>
       </div>

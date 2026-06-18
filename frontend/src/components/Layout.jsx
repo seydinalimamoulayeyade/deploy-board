@@ -61,6 +61,11 @@ const Layout = () => {
                 {user?.username && (
                   <span className="hidden sm:inline gh-mono-label text-xs text-gh-fg-muted">{user.username}</span>
                 )}
+                {user?.role === 'viewer' && (
+                  <span className="gh-mono-label text-[10px] px-2 py-0.5 rounded-full bg-gh-attention-subtle text-gh-attention-fg">
+                    lecture seule
+                  </span>
+                )}
                 <button
                   onClick={handleLogout}
                   className="px-3 py-1.5 text-sm font-medium rounded-md border border-gh-border text-gh-fg-muted hover:text-gh-fg hover:bg-gh-elevated transition-colors"

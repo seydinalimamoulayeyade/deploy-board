@@ -1,5 +1,6 @@
 const Deployment = require('../models/Deployment');
 const slackService = require('../services/slackService');
+const demo = require('../services/demoService');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -14,6 +15,9 @@ const ApiError = require('../utils/ApiError');
 const getDeploymentHistory = async (req, res, next) => {
   try {
     const { pipelineId } = req.params;
+    if (demo.isDemo()) {
+      return res.status(200).json({ status: 'success', data: demo.getHistory(pipelineId) });
+    }
     const days = Math.max(parseInt(req.query.days, 10) || 7, 1);
     const status = req.query.status || null;
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
@@ -90,6 +94,9 @@ const saveDeployment = async (req, res, next) => {
 const getEnvironmentStatus = async (req, res, next) => {
   try {
     const { environment } = req.params;
+    if (demo.isDemo()) {
+      return res.status(200).json({ status: 'success', data: { environment, deployments: demo.getEnvironmentStatus(environment) } });
+    }
     const deployments = await Deployment.getEnvironmentStatus(environment);
     res.status(200).json({
       status: 'success',

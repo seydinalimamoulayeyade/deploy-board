@@ -1,6 +1,7 @@
 const jenkinsService = require('../services/jenkinsService');
 const sonarQubeService = require('../services/sonarQubeService');
 const slackService = require('../services/slackService');
+const demo = require('../services/demoService');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -35,6 +36,9 @@ const enrichWithSonar = async (pipelines) => {
 const getAllPipelines = async (req, res, next) => {
   try {
     const { environment } = req.query;
+    if (demo.isDemo()) {
+      return res.status(200).json({ status: 'success', data: { pipelines: demo.getPipelines(environment) } });
+    }
     const pipelines = await jenkinsService.getAllJobs(environment || null);
     const enriched = await enrichWithSonar(pipelines);
     res.status(200).json({
@@ -56,6 +60,9 @@ const getBuildDetails = async (req, res, next) => {
     const num = parseInt(buildNumber, 10);
     if (Number.isNaN(num) || num < 1) {
       throw new ApiError(400, 'Numéro de build invalide');
+    }
+    if (demo.isDemo()) {
+      return res.status(200).json({ status: 'success', data: demo.getBuildDetails(jobName, num) });
     }
     const build = await jenkinsService.getBuildDetails(jobName, num);
     res.status(200).json({ status: 'success', data: build });
@@ -79,7 +86,7 @@ const getBuildLog = async (req, res, next) => {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const pageSize = Math.min(parseInt(req.query.pageSize, 10) || 1000, 5000);
 
-    const logData = await jenkinsService.getBuildLog(jobName, num);
+    const logData = demo.isDemo() ? demo.buildLog() : await jenkinsService.getBuildLog(jobName, num);
     const lines = (logData.text || '').split('\n');
     const totalLines = lines.length;
     const totalPages = Math.max(Math.ceil(totalLines / pageSize), 1);
@@ -109,6 +116,9 @@ const triggerBuild = async (req, res, next) => {
     if (Number.isNaN(num) || num < 1) {
       throw new ApiError(400, 'Numéro de build invalide');
     }
+    if (demo.isDemo()) {
+      return res.status(201).json({ status: 'success', data: { message: 'Rollback simulé (mode démo)', queuedBuildNumber: num + 1 } });
+    }
     const result = await jenkinsService.replayBuild(jobName, num);
     // Notification Slack du rollback (Req 15.4) — n'échoue jamais le traitement
     slackService.notifyRollback(jobName, num).catch(() => {});
@@ -126,6 +136,9 @@ const getStableBuilds = async (req, res, next) => {
   try {
     const { jobName } = req.params;
     const count = Math.min(parseInt(req.query.count, 10) || 5, 10);
+    if (demo.isDemo()) {
+      return res.status(200).json({ status: 'success', data: { builds: demo.getStableBuilds(jobName, count) } });
+    }
     const builds = await jenkinsService.getStableBuilds(jobName, count);
     res.status(200).json({ status: 'success', data: { builds } });
   } catch (err) {

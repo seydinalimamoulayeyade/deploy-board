@@ -32,6 +32,15 @@ app.use('/api/deployments', deploymentsRoutes);
 
 // Health check avec connectivité des services (Req 12.6)
 app.get('/health', async (req, res) => {
+  if (process.env.DEMO_MODE === 'true') {
+    return res.status(200).json({
+      status: 'OK',
+      mode: 'demo',
+      timestamp: new Date().toISOString(),
+      services: { mongodb: 'connected', jenkins: 'reachable', sonarqube: 'reachable' },
+    });
+  }
+
   const [jenkins, sonarqube] = await Promise.all([
     jenkinsService.healthCheck().catch(() => false),
     sonarQubeService.healthCheck().catch(() => false),

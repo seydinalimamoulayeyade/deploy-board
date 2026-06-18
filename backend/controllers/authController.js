@@ -4,10 +4,9 @@ const config = require('../config/auth');
 const ApiError = require('../utils/ApiError');
 
 /**
- * Vérifie le mot de passe fourni contre la config (hash bcrypt prioritaire,
- * sinon comparaison en clair via ADMIN_PASSWORD).
+ * Vérifie le mot de passe admin (hash bcrypt prioritaire, sinon clair).
  */
-const verifyPassword = async (password) => {
+const verifyAdminPassword = async (password) => {
   if (config.passwordHash) {
     return bcrypt.compare(password, config.passwordHash);
   }
@@ -18,8 +17,14 @@ const verifyPassword = async (password) => {
 };
 
 /**
+ * Génère un JWT incluant le rôle.
+ */
+const signToken = (username, role) =>
+  jwt.sign({ sub: username, role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+
+/**
  * POST /api/auth/login
- * Vérifie les identifiants admin et retourne un JWT.
+ * Connexion admin (rôle "admin").
  */
 const login = async (req, res, next) => {
   try {
@@ -28,20 +33,34 @@ const login = async (req, res, next) => {
       throw new ApiError(400, 'Identifiant et mot de passe requis');
     }
 
-    const userOk = username === config.username;
-    const passOk = await verifyPassword(password);
-
-    if (!userOk || !passOk) {
+    const ok = username === config.username && (await verifyAdminPassword(password));
+    if (!ok) {
       throw new ApiError(401, 'Identifiants invalides');
     }
 
-    const token = jwt.sign({ sub: username }, config.jwtSecret, {
-      expiresIn: config.jwtExpiresIn,
-    });
-
+    const token = signToken(username, 'admin');
     res.status(200).json({
       status: 'success',
-      data: { token, user: { username } },
+      data: { token, user: { username, role: 'admin' } },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * POST /api/auth/guest
+ * Ouvre une session invité en lecture seule (rôle "viewer"), sans mot de passe.
+ */
+const guest = (req, res, next) => {
+  try {
+    if (!config.guestEnabled) {
+      throw new ApiError(403, 'Accès invité désactivé');
+    }
+    const token = signToken(config.guestUsername, 'viewer');
+    res.status(200).json({
+      status: 'success',
+      data: { token, user: { username: config.guestUsername, role: 'viewer' } },
     });
   } catch (err) {
     next(err);
@@ -50,10 +69,10 @@ const login = async (req, res, next) => {
 
 /**
  * GET /api/auth/me
- * Retourne l'utilisateur courant (route protégée).
+ * Utilisateur courant (route protégée).
  */
 const me = (req, res) => {
   res.status(200).json({ status: 'success', data: { user: req.user } });
 };
 
-module.exports = { login, me };
+module.exports = { login, guest, me };

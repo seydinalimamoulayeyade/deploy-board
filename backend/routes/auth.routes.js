@@ -4,8 +4,11 @@ const authController = require('../controllers/authController');
 const requireAuth = require('../middleware/auth.middleware');
 const { loginLimiter } = require('../middleware/rateLimit.middleware');
 
-// Connexion (limitée contre le bruteforce)
+// Connexion admin (limitée contre le bruteforce)
 router.post('/login', loginLimiter, authController.login);
+
+// Session invité lecture seule (démo)
+router.post('/guest', loginLimiter, authController.guest);
 
 // Utilisateur courant (protégé)
 router.get('/me', requireAuth, authController.me);

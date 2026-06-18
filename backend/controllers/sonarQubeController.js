@@ -1,4 +1,5 @@
 const sonarQubeService = require('../services/sonarQubeService');
+const demo = require('../services/demoService');
 
 /**
  * Contrôleur SonarQube
@@ -13,6 +14,9 @@ const sonarQubeService = require('../services/sonarQubeService');
 const getProjectMetrics = async (req, res, next) => {
   try {
     const { projectKey } = req.params;
+    if (demo.isDemo()) {
+      return res.status(200).json({ status: 'success', data: demo.getSonarMetrics(projectKey) });
+    }
     const metrics = await sonarQubeService.getProjectMetrics(projectKey);
     res.status(200).json({ status: 'success', data: metrics });
   } catch (err) {

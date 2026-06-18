@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jenkinsController = require('../controllers/jenkinsController');
+const { requireAdmin } = require('../middleware/auth.middleware');
 
 /**
  * Routes Jenkins
@@ -16,8 +17,8 @@ router.get('/build/:jobName/:buildNumber', jenkinsController.getBuildDetails);
 // Log console d'un build (paginé)
 router.get('/build/:jobName/:buildNumber/log', jenkinsController.getBuildLog);
 
-// Replay d'un build (rollback)
-router.post('/build/:jobName/:buildNumber/replay', jenkinsController.triggerBuild);
+// Replay d'un build (rollback) — réservé à l'administrateur
+router.post('/build/:jobName/:buildNumber/replay', requireAdmin, jenkinsController.triggerBuild);
 
 // Derniers builds stables (réussis)
 router.get('/builds/:jobName/stable', jenkinsController.getStableBuilds);

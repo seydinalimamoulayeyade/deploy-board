@@ -3,8 +3,7 @@ const config = require('../config/auth');
 const ApiError = require('../utils/ApiError');
 
 /**
- * Middleware d'authentification JWT.
- * Vérifie l'en-tête Authorization: Bearer <token> et attache req.user.
+ * Vérifie le JWT et attache req.user = { username, role }.
  */
 const requireAuth = (req, res, next) => {
   try {
@@ -16,7 +15,7 @@ const requireAuth = (req, res, next) => {
     }
 
     const payload = jwt.verify(token, config.jwtSecret);
-    req.user = { username: payload.sub };
+    req.user = { username: payload.sub, role: payload.role || 'viewer' };
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
@@ -29,4 +28,16 @@ const requireAuth = (req, res, next) => {
   }
 };
 
+/**
+ * Exige le rôle "admin" (actions sensibles : rollback, etc.).
+ * À utiliser après requireAuth.
+ */
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return next(new ApiError(403, 'Action réservée à l\'administrateur (mode lecture seule)'));
+  }
+  next();
+};
+
 module.exports = requireAuth;
+module.exports.requireAdmin = requireAdmin;

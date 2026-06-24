@@ -70,4 +70,10 @@ Configuration du webhook GitHub : voir [`docs/webhook-setup.md`](docs/webhook-se
 
 ## Sécurité
 
-Le backend n'a pas d'authentification : ajouter JWT + rate limiting avant toute exposition publique.
+- **Authentification JWT** sur l'API et le dashboard (compte admin unique défini dans `.env`).
+- **Rate limiting** actif sur l'API et l'endpoint de connexion.
+- **Ingestion CI** protégée par le header `x-deploy-token` (`DEPLOY_INGEST_TOKEN`).
+- **Secrets** (identifiants Jenkins/SonarQube, `JWT_SECRET`, webhook Slack) jamais commités : uniquement dans `.env`.
+- Le mot de passe admin peut être fourni en clair (`ADMIN_PASSWORD`) ou en hash bcrypt (`ADMIN_PASSWORD_HASH`).
+
+> Avant toute exposition publique : servir derrière HTTPS, restreindre les origines CORS et faire tourner Jenkins/SonarQube sur un réseau privé.
